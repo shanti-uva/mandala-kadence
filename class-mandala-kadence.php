@@ -127,11 +127,16 @@ class MandalaKadence {
                 // Title
                 $title = $data['title'];
                 $this->add_meta('citation_title', $title);
+
                 // Authors
                 $authors = $data['field_book_author']['und'];
                 $author_map = array_map(function ($a) { return $a['value']; }, $authors);
                 $alist = implode(', ', $author_map);
                 $this->add_meta('citation_author', $alist);
+
+                // Date
+                $pubdate = $data['field_doi']['und'][0]['value'];
+                $this->add_meta('citation_doi', trim($pubdate));
 
                 // Journal Title
                 $options = get_option( 'mandala_plugin_options' );
@@ -139,6 +144,8 @@ class MandalaKadence {
                 if (!empty($journal)) {
                     $this->add_meta('citation_journal', $journal);
                 }
+
+
 
                 // DOI
                 $doi = $data['field_doi']['und'][0]['value'];
