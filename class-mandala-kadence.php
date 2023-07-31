@@ -135,7 +135,7 @@ class MandalaKadence {
                 $this->add_meta('citation_author', $alist);
 
                 // Date
-                $pubdate = $data['field_doi']['und'][0]['value'];
+                $pubdate = $data['field_book_date']['und'][0]['value'];
                 $this->add_meta('citation_doi', trim($pubdate));
 
                 // Journal Title
