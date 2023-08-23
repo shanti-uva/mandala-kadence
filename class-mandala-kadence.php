@@ -51,13 +51,27 @@ function get_solr_record($uid) {
 		'https://mandala-index-dev.internal.lib.virginia.edu/solr/kmassets/select' :
 		'https://mandala-index.internal.lib.virginia.edu/solr/kmassets/select';
 	$nd_solr_url = "$solr_url?q=uid:$uid&fl=*&wt=json";
-	$njson = file_get_contents($nd_solr_url);
-	return json_decode($njson, TRUE);
+    // error_log("solrdoc for uid: " . $nd_solr_url);
+	$sdoc_data = file_get_contents($nd_solr_url);
+    // error_log('solr data: ' . $sdoc_data);
+	$sdoc = json_decode($sdoc_data, TRUE);
+    if (!empty($sdoc['response']['docs'])) {
+        return $sdoc['response']['docs'][0];
+    }
+    return $sdoc;
 }
 
 function get_nodejson($site, $nid) {
 	$uid ="$site-$nid";
-	return get_solr_record($uid);
+	$sdoc = get_solr_record($uid);
+    $node_json_url = $sdoc['url_json'];
+    if (!empty($node_json_url)) {
+        $njdata = file_get_contents($node_json_url);
+        // error_log('node json data: ' . $njdata);
+        $node_json = json_decode($njdata, TRUE);
+        return $node_json;
+    }
+    return FALSE;
 }
 
 /*
@@ -160,29 +174,27 @@ class MandalaKadence {
         // Get text info if article in journal and add citation meta tags
         if ($pgid) {
             $text_id = get_field('mandala_text_id', $pgid);
+            // error_log('Text id: ' . $text_id);
             if ($text_id) {
-				$mtxtdomain = get_mandala_site_url();
 				$nodejson = get_nodejson("texts", $text_id);
-				error_log('Nd json title: ' . $nodejson['title']);
-                $url = "$mtxtdomain/shanti_texts/node_json/$text_id";
-                $data = $this->get_data($url);
-                $data = json_decode($data, true);
                 echo "\n\n<!-- Mandala Meta Tags -->\n";
 
                 // Title
-                $title = $data['title'];
+                $title = $nodejson['title'];
                 $this->add_meta('citation_title', $title);
 
                 // Authors
-                $authors = $data['field_book_author']['und'];
+                $authors = $nodejson['field_book_author']['und'];
                 $author_map = array_map(function ($a) { return $a['value']; }, $authors);
 				foreach($author_map as $n => $authname) {
 					$this->add_meta('citation_author', $authname);
 				}
 
                 // Date
-                $pubdate = $data['field_book_date']['und'][0]['value'];
-                $this->add_meta('citation_publication_date', trim($pubdate));
+                $pubdate = $nodejson['field_book_date']['und'][0]['value'];
+                $pdobj = date_create($pubdate);
+                $pubdate = date_format($pdobj, "Y/m/d");
+                $this->add_meta('citation_publication_date', $pubdate);
 
                 // Journal Title
                 $options = get_option( 'mandala_plugin_options' );
@@ -191,12 +203,21 @@ class MandalaKadence {
                     $this->add_meta('citation_journal', $journal);
                 }
 
+                // Pages
+                $stpg = 1;
+                $endpg = $nodejson['field_pages']['und'][0]['value'];
+                if(strstr($endpg, '-')) {
+                    [$stpg, $endpg] = explode('-', $endpg);
+                }
+                $this->add_meta('citation_firstpage', $stpg);
+                $this->add_meta('citation_lastpage', $endpg);
+
                 // DOI
-                $doi = $data['field_doi']['und'][0]['value'];
+                $doi = $nodejson['field_doi']['und'][0]['value'];
                 $this->add_meta('citation_doi', trim($doi));
 
                 // Abstract
-                $fullbook = $data['field_book_content']['und']['0']['value'];
+                $fullbook = $nodejson['field_book_content']['und']['0']['value'];
                 if(str_contains($fullbook, 'Abstract:')) {
                     $abs = explode('Abstract:', $fullbook)[1];
                     $abs = strip_tags($abs);
