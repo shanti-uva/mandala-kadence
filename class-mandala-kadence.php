@@ -22,6 +22,33 @@
  * @package  Mandala Kadence
  * @version  1.0
  */
+
+/*
+ * Generic Functions
+ */
+
+function get_mandala_site_url($asset_type='texts') {
+	$wpsite = get_site_url();
+	$devsites = ['local', 'dev', 'stage', 'staging'];
+	$patt = '/(' . implode('|', $devsites) . ')/';
+	if(preg_match($patt, $wpsite)) {
+		return "https://mandala-$asset_type-dev.internal.lib.virginia.edu";
+	} else {
+		return "https://$asset_type.mandala.library.virginia.edu";
+	}
+}
+
+function get_solr_record($uid) {
+
+}
+
+function get_nodejson($site, $nid) {
+
+}
+
+/*
+ * Main Class: MandalaKadence
+ */
 class MandalaKadence {
 	/**
 	 * The construct function adds actions and filters for
@@ -120,10 +147,13 @@ class MandalaKadence {
         if ($pgid) {
             $text_id = get_field('mandala_text_id', $pgid);
             if ($text_id) {
-                $url = 'https://texts.mandala.library.virginia.edu/shanti_texts/node_json/' . $text_id;
+				$mtxtdomain = get_mandala_site_url();
+				$nodejson = get_nodejson("texts", $text_id);
+                $url = "$mtxtdomain/shanti_texts/node_json/$text_id";
                 $data = $this->get_data($url);
                 $data = json_decode($data, true);
                 echo "\n\n<!-- Mandala Meta Tags -->\n";
+
                 // Title
                 $title = $data['title'];
                 $this->add_meta('citation_title', $title);
@@ -131,12 +161,13 @@ class MandalaKadence {
                 // Authors
                 $authors = $data['field_book_author']['und'];
                 $author_map = array_map(function ($a) { return $a['value']; }, $authors);
-                $alist = implode(', ', $author_map);
-                $this->add_meta('citation_author', $alist);
+				foreach($author_map as $n => $authname) {
+					$this->add_meta('citation_author', $authname);
+				}
 
                 // Date
                 $pubdate = $data['field_book_date']['und'][0]['value'];
-                $this->add_meta('citation_doi', trim($pubdate));
+                $this->add_meta('citation_publication_date', trim($pubdate));
 
                 // Journal Title
                 $options = get_option( 'mandala_plugin_options' );
@@ -144,8 +175,6 @@ class MandalaKadence {
                 if (!empty($journal)) {
                     $this->add_meta('citation_journal', $journal);
                 }
-
-
 
                 // DOI
                 $doi = $data['field_doi']['und'][0]['value'];
