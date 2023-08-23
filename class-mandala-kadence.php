@@ -27,11 +27,19 @@
  * Generic Functions
  */
 
-function get_mandala_site_url($asset_type='texts') {
+function _is_dev_site() {
 	$wpsite = get_site_url();
 	$devsites = ['local', 'dev', 'stage', 'staging'];
 	$patt = '/(' . implode('|', $devsites) . ')/';
 	if(preg_match($patt, $wpsite)) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+function get_mandala_site_url($asset_type='texts') {
+	if(_is_dev_site()) {
 		return "https://mandala-$asset_type-dev.internal.lib.virginia.edu";
 	} else {
 		return "https://$asset_type.mandala.library.virginia.edu";
@@ -39,11 +47,17 @@ function get_mandala_site_url($asset_type='texts') {
 }
 
 function get_solr_record($uid) {
-
+	$solr_url = _is_dev_site() ?
+		'https://mandala-index-dev.internal.lib.virginia.edu/solr/kmassets/select' :
+		'https://mandala-index.internal.lib.virginia.edu/solr/kmassets/select';
+	$nd_solr_url = "$solr_url?q=uid:$uid&fl=*&wt=json";
+	$njson = file_get_contents($nd_solr_url);
+	return json_decode($njson, TRUE);
 }
 
 function get_nodejson($site, $nid) {
-
+	$uid ="$site-$nid";
+	return get_solr_record($uid);
 }
 
 /*
@@ -149,6 +163,7 @@ class MandalaKadence {
             if ($text_id) {
 				$mtxtdomain = get_mandala_site_url();
 				$nodejson = get_nodejson("texts", $text_id);
+				error_log('Nd json title: ' . $nodejson['title']);
                 $url = "$mtxtdomain/shanti_texts/node_json/$text_id";
                 $data = $this->get_data($url);
                 $data = json_decode($data, true);
