@@ -67,6 +67,11 @@
 body.loading #primary {
   display: none;
 }
+body.loading #secondary {
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
+}
 body.loading footer#colophon {
   background: unset;
 }

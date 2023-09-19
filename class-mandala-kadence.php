@@ -41,8 +41,7 @@ class MandalaKadence {
 
 		// Custom Filters
         add_filter('pre_get_document_title', array($this, 'subsite_title_clean'));
-		add_filter('body_class', array($this, 'subsite_class'));
-		add_filter('body_class', array($this, 'login_class'));
+		add_filter('body_class', array($this, 'mandala_body_classes'));
         // Get main site title before overwriting in the following filter
         $this->main_title = get_bloginfo();
 		add_filter('pre_option_blogname', array($this, 'subsite_bname'));
@@ -232,22 +231,21 @@ class MandalaKadence {
 	 *
 	 * @return array|string[]
 	 */
-	public function subsite_class() {
+	public function mandala_body_classes() {
+        $body_classes = array('loading');
+        // Login Class
+        if (is_user_logged_in()) {
+            $body_classes[] = 'logged-in';
+        }
+        // Subsite Classes
         if ($this->is_subsite()) {
-            $extra_classes = array('subsite', 'loading'); # start list with generic "subsite" class for body
+            $body_classes[] = 'subsite'; # start list with generic "subsite" class for body
             $subsite_class = $this->get_subsite_info('class') ?: 'subsite' . get_the_ID(); # add unique ss id
             $subsite_class = explode(' ', $subsite_class);  # if user has space delimited classes in field
-            $extra_classes = array_merge($extra_classes, $subsite_class);
-            return $extra_classes;
+            $body_classes = array_merge($body_classes, $subsite_class);
         }
-        return array('loading');
-	}
-
-	public function login_class() {
-		if (is_user_logged_in()) {
-			return array('logged-in');
-		}
-		return array();
+        // error_log("Extra body classes: " . implode(', ', $body_classes));
+        return $body_classes;
 	}
 
     /**
