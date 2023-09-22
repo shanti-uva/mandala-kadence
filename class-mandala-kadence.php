@@ -22,6 +22,61 @@
  * @package  Mandala Kadence
  * @version  1.0
  */
+
+/*
+ * Generic Functions
+ */
+
+function _is_dev_site() {
+	$wpsite = get_site_url();
+	$devsites = ['local', 'dev', 'stage', 'staging'];
+	$patt = '/(' . implode('|', $devsites) . ')/';
+	if(preg_match($patt, $wpsite)) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+function get_mandala_site_url($asset_type='texts') {
+	if(_is_dev_site()) {
+		return "https://mandala-$asset_type-dev.internal.lib.virginia.edu";
+	} else {
+		return "https://$asset_type.mandala.library.virginia.edu";
+	}
+}
+
+function get_solr_record($uid) {
+	$solr_url = _is_dev_site() ?
+		'https://mandala-index-dev.internal.lib.virginia.edu/solr/kmassets/select' :
+		'https://mandala-index.internal.lib.virginia.edu/solr/kmassets/select';
+	$nd_solr_url = "$solr_url?q=uid:$uid&fl=*&wt=json";
+    // error_log("solrdoc for uid: " . $nd_solr_url);
+	$sdoc_data = file_get_contents($nd_solr_url);
+    // error_log('solr data: ' . $sdoc_data);
+	$sdoc = json_decode($sdoc_data, TRUE);
+    if (!empty($sdoc['response']['docs'])) {
+        return $sdoc['response']['docs'][0];
+    }
+    return $sdoc;
+}
+
+function get_nodejson($site, $nid) {
+	$uid ="$site-$nid";
+	$sdoc = get_solr_record($uid);
+    $node_json_url = $sdoc['url_json'];
+    if (!empty($node_json_url)) {
+        $njdata = file_get_contents($node_json_url);
+        // error_log('node json data: ' . $njdata);
+        $node_json = json_decode($njdata, TRUE);
+        return $node_json;
+    }
+    return FALSE;
+}
+
+/*
+ * Main Class: MandalaKadence
+ */
 class MandalaKadence {
 	/**
 	 * The construct function adds actions and filters for
@@ -31,7 +86,7 @@ class MandalaKadence {
 	function __construct() {
 		// Custom Actions
 		add_action('after_setup_theme', array($this, 'init'));
-        add_action('wp_head', array($this, 'subsite_add_css'));
+        add_action('wp_head', array($this, 'mandala_update_header'));
         add_action('kadence_top_header', array($this, 'subsite_back_link'));
 		add_action('kadence_header', array($this, 'add_custom_data'));
 		add_action('get_template_part_template-parts/header/navigation', array($this, 'subsite_nav'));
@@ -93,10 +148,12 @@ class MandalaKadence {
      * Each rule in the CSS field and each selector within each rule is appended with the
      * body class for the subsite, e.g .my-subsite div.foo, .my-subsite div.bar {...}, etc.
      */
-    public function subsite_add_css() {
+    public function mandala_update_header() {
+        $pgid = get_the_ID();
+        // Import subsite info for a page
         $subinf = $this->get_subsite_info();
         if (!empty($subinf['css'])) {
-            $subid = $subinf['class'] ?: 'subsite' . get_the_ID();
+            $subid = $subinf['class'] ?: 'subsite' . $pgid;
             $css_lines = preg_split("/\n*}\n*/", $subinf['css']);
             $css_lines = array_map(function($item) use ($subid) {
                 if (empty($item)) { return ""; }
@@ -114,6 +171,70 @@ class MandalaKadence {
             // error_log("Subsite CSS ($subid):\n$css_lines");
             echo '<style id="' . $subid . '-styles">' . $css_lines . '</style>';
         }
+
+        // Get text info if article in journal and add citation meta tags
+        if ($pgid) {
+            $text_id = get_field('mandala_text_id', $pgid);
+            // error_log('Text id: ' . $text_id);
+            if ($text_id) {
+				$nodejson = get_nodejson("texts", $text_id);
+                echo "\n\n<!-- Mandala Meta Tags -->\n";
+
+                // Title
+                $title = $nodejson['title'];
+                $this->add_meta('citation_title', $title);
+
+                // Authors
+                $authors = $nodejson['field_book_author']['und'];
+                $author_map = array_map(function ($a) { return $a['value']; }, $authors);
+				foreach($author_map as $n => $authname) {
+					$this->add_meta('citation_author', $authname);
+				}
+
+                // Date
+                $pubdate = $nodejson['field_book_date']['und'][0]['value'];
+                $pdobj = date_create($pubdate);
+                $pubdate = date_format($pdobj, "Y/m/d");
+                $this->add_meta('citation_publication_date', $pubdate);
+
+                // Journal Title
+                $options = get_option( 'mandala_plugin_options' );
+                $journal = !empty($options['journal_title']) ? $options['journal_title'] : False;
+                if (!empty($journal)) {
+                    $this->add_meta('citation_journal', $journal);
+                }
+
+                // Pages
+                $stpg = 1;
+                $endpg = $nodejson['field_pages']['und'][0]['value'];
+                if(strstr($endpg, '-')) {
+                    [$stpg, $endpg] = explode('-', $endpg);
+                }
+                $this->add_meta('citation_firstpage', $stpg);
+                $this->add_meta('citation_lastpage', $endpg);
+
+                // DOI
+                $doi = $nodejson['field_doi']['und'][0]['value'];
+                $this->add_meta('citation_doi', trim($doi));
+
+                // Abstract
+                $fullbook = $nodejson['field_book_content']['und']['0']['value'];
+                if(str_contains($fullbook, 'Abstract:')) {
+                    $abs = explode('Abstract:', $fullbook)[1];
+                    $abs = strip_tags($abs);
+                    if (!empty($abs)) {
+                        $this->add_meta('citations_abstract', trim($abs));
+                    }
+                }
+
+                // Comment closure
+                echo "<!-- End of Mandala Meta Tags -->\n\n";
+            }
+        }
+    }
+
+    private function add_meta($name, $cnt) {
+        echo "<meta name=\"$name\" content=\"$cnt\" /> \n";
     }
 
     /**
@@ -331,6 +452,32 @@ class MandalaKadence {
         }
     }
 
+    private function get_data($url) {
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "x-rapidapi-host: unogsng.p.rapidapi.com",
+                "x-rapidapi-key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            ),
+        ));
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+        if ($err) {
+            error_log("cURL ($url) Error #:" . $err);
+        } else {
+            return $response;
+        }
+    }
+
 	// Disable automatic emails for wp update when they succeed
 	public function stop_wpupdate_emails( $send, $type, $core_update, $result ) {
 		if ( ! empty( $type ) && $type == 'success' ) {
@@ -338,6 +485,7 @@ class MandalaKadence {
 		}
 		return true;
 	}
+
 }
 
 $mandalakadence = new MandalaKadence();
