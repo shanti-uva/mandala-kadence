@@ -96,7 +96,7 @@ class MandalaKadence {
 
 		// Custom Filters
         add_filter('pre_get_document_title', array($this, 'subsite_title_clean'));
-		add_filter('body_class', array($this, 'update_body_class'));
+		add_filter('body_class', array($this, 'mandala_body_classes'));
         // Get main site title before overwriting in the following filter
         $this->main_title = get_bloginfo();
 		add_filter('pre_option_blogname', array($this, 'subsite_bname'));
@@ -132,13 +132,11 @@ class MandalaKadence {
 
 	/**
 	 * This function adds custom data as a JSON object to the DOM to be used by an embedded React standalone
-     * Adds script tage with JSON text in it. (Deprecated)
-     * Replaced by window.mandala_wp settings in mandala plugin's enqueue_scripts function
 	 */
 	public function add_custom_data() {
 		$options = get_option( 'mandala_plugin_options' );
-        if (is_numeric($options['default_sidebar'])) {
-		    $sbval = $options['default_sidebar'] * 1;
+		$sbval = !empty($options['default_sidebar']) ? $options['default_sidebar'] * 1 : False;
+		if ($sbval) {
 			echo '<script type="application/json" id="mandala_data">{ "sidebar": ' . $sbval . ' }</script>';
 		}
 	}
@@ -301,24 +299,25 @@ class MandalaKadence {
     }
 
 	/**
-	 * Called by the filter for "body_class".
+	 * Called by the filter for "body_class". Adds specific classes to the body for subsites.
 	 *
 	 * @return array|string[]
 	 */
-	public function update_body_class() {
-        $extra_classes = array('loading'); # Add loading class to hide menu initially
-        // Adds specific classes to the body for subsites.
+	public function mandala_body_classes() {
+        $body_classes = array('loading');
+        // Login Class
+        if (is_user_logged_in()) {
+            $body_classes[] = 'logged-in';
+        }
+        // Subsite Classes
         if ($this->is_subsite()) {
-            $extra_classes[] = 'subsite'; # start list with generic "subsite" class for body
+            $body_classes[] = 'subsite'; # start list with generic "subsite" class for body
             $subsite_class = $this->get_subsite_info('class') ?: 'subsite' . get_the_ID(); # add unique ss id
             $subsite_class = explode(' ', $subsite_class);  # if user has space delimited classes in field
-            $extra_classes = array_merge($extra_classes, $subsite_class);
+            $body_classes = array_merge($body_classes, $subsite_class);
         }
-        // Logged in class
-        if (is_user_logged_in()) {
-            $extra_classes[] = 'logged-in';
-        }
-        return $extra_classes;
+        // error_log("Extra body classes: " . implode(', ', $body_classes));
+        return $body_classes;
 	}
 
     /**
