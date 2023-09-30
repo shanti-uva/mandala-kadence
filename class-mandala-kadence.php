@@ -85,6 +85,7 @@ class MandalaKadence {
 
 	function __construct() {
 		// Custom Actions
+        add_action('init', array($this, 'set_cookie'));
 		add_action('after_setup_theme', array($this, 'init'));
         add_action('wp_head', array($this, 'mandala_update_header'));
         add_action('kadence_top_header', array($this, 'subsite_back_link'));
@@ -108,6 +109,30 @@ class MandalaKadence {
 
 	}
 
+    /**
+     * Sets cookie for mandala plugin. Moved here because trying to avoid headers already set warning in error log
+     * But still happens here. Could move back into the plugin itself.
+     * @return void
+     */
+    function set_cookie() {
+        // Add filter cookie based on path if option checked in mandala plugin
+        $options = get_option( 'mandala_plugin_options' );
+        $nocookie = True;
+        if ($options['path_filter']) {
+            $current_url = $_SERVER['REQUEST_URI'];
+            if (preg_match('/\/(audio-video|collections|images|places|sources|subjects|terms|texts|visuals)/', $current_url, $mtch)) {
+                setcookie('mandala_filters', "asset_type:$mtch[1]", time() + 3600, COOKIEPATH, COOKIE_DOMAIN);
+                // error_log("Cookie!!!! = asset_type:$mtch[1]");
+                $nocookie = False;
+            }
+
+            if ($nocookie) {
+                // error_log("no cookie set, monster!");
+                setcookie('mandala_filters', '', time() + 3600, COOKIEPATH, COOKIE_DOMAIN);
+            }
+        }
+    }
+
 	function init() {
 		// Reigster styles and scripts for Mandala Kadence theme
 		wp_enqueue_style( 'mandala-kadence-styles', get_stylesheet_directory_uri() . '/css/mandala-kadence.css',
@@ -127,7 +152,6 @@ class MandalaKadence {
 			wp_enqueue_style( 'mandala-kadence-custom-styles-' . $n,  get_stylesheet_directory_uri() . "/css/custom/$cssfile",
 				false,'1.0','all');
 		}
-
 	}
 
 	/**
