@@ -84,6 +84,13 @@ div#basicAndBrowse {
 
 }
 
+#l-column__search .search-column-header-filters {
+  .search-column-search-form , .search-column-reset-filters {
+    padding-left: 1rem;
+    border: thin solid green;
+  }
+}
+
 /** Hide primary menu when subsite menu is shown **/
 #mandala-subsite-menu ~ * {
   display: none;
