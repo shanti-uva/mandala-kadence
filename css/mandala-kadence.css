@@ -258,6 +258,11 @@ div#basicAndBrowse #browseSearchPortal main-search-tree-toggle svg {
   color: #fff;
 }
 
+#l-column__search .search-column-header-filters .search-column-search-form, #l-column__search .search-column-header-filters .search-column-reset-filters {
+  padding-left: 1rem;
+  border: thin solid green;
+}
+
 /** Hide primary menu when subsite menu is shown **/
 #mandala-subsite-menu ~ * {
   display: none;
