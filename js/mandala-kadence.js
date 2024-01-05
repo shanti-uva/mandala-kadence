@@ -6,7 +6,7 @@
         CheckForHash();
         // ActivateMobileSearchTab();
         ActivateSettingsLink();
-        MainMenuUpdates();
+        // MainMenuUpdates();
         // $(window).on("resize", mandalaWindowResize);
         // Otherwise, add event listener for hash changes
         window.addEventListener("hashchange", HashMenuActiveLink, false);
@@ -86,12 +86,20 @@
         });
     }
 
-    const MainMenuUpdates = () => {
-        $('#secondary .widget_nav_menu h2.widget-title').append('<div class="main-menu-close"><span class="icon shanticon-cancel"></span></div>');
-        $('#secondary .widget_nav_menu h2.widget-title').on('click', '.shanticon-cancel', function(e) {
-            console.log("close btn clicked");
-            console.log("close btn clicked");
-            $('#secondary, #secondary .l-content__rightsidebar').hide();
-        });
-    }
+    /*
+       const MainMenuUpdates = () => {
+          //  $('#secondary .widget_nav_menu h2.widget-title').append('<div id="main-menu-close"></div>');
+
+           $('#secondary .widget_nav_menu h2.widget-title').on('click', '.shanticon-cancel', function(e) {
+               $('#secondary, #secondary .l-content__rightsidebar').hide();
+               console.log("right sidebar closed???", e.currentTarget, $(e.currentTarget).parent().hasClass('main-menu-close'));
+               if($(e.currentTarget).parent().hasClass('main-menu-close')) {
+                   localStorage.setItem('mainmenu', 'closed');
+                   const evt = new Event('storage');
+                   document.dispatchEvent(evt);
+                   console.log("Updated localstorage and dispatched event", localStorage);
+               }
+           });
+    }*/
+
 })(jQuery);

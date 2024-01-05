@@ -105,6 +105,7 @@ class MandalaKadence {
 		add_filter( 'auto_core_update_send_email', array($this, 'stop_wpupdate_emails'), 10, 4);
 		add_filter( 'auto_plugin_update_send_email', '__return_false' );
 		add_filter( 'auto_theme_update_send_email', '__return_false' );
+        add_filter('kadence_dynamic_sidebar_content', array($this, 'add_search_button_portal'));
 
 	}
 
@@ -232,6 +233,14 @@ class MandalaKadence {
 
     private function add_meta($name, $cnt) {
         echo "<meta name=\"$name\" content=\"$cnt\" /> \n";
+    }
+
+    public function add_search_button_portal($sidebar) {
+        // Add close button Portal to Sidebar header
+        $output = preg_replace('/<\/h2>/', '<div id="main-menu-close"></div></h2>', $sidebar, 1);
+        // Add Search Box portal to top of sidebar
+        $output = str_replace('class="menu-main-menu-container">', 'class="menu-main-menu-container"><div id="search-box-btns"></div>', $output);
+        return $output . '<!-- End of Sidebar -->';
     }
 
     /**
