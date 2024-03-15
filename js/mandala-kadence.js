@@ -6,6 +6,7 @@
         CheckForHash();
         // ActivateMobileSearchTab();
         ActivateSettingsLink();
+        ResizeListener();
         // MainMenuUpdates();
         // $(window).on("resize", mandalaWindowResize);
         // Otherwise, add event listener for hash changes
@@ -85,6 +86,32 @@
             return false;
         });
     }
+
+    /** ResizeListener for Window: checks if breadcrumbs go over parent container and are hiddne **/
+    const ResizeListener = () => {
+        const checkBreadcrumbs = () => {
+            const bcitem = $('.breadcrumb-item.self');
+            const bc = bcitem[0].getBoundingClientRect();
+            const pitem = bcitem.parent();
+            const p = pitem.get(0).getBoundingClientRect();
+            const ch = $('#c-content__header__main')[0].getBoundingClientRect();
+            if (bc && ch) {
+                const end_of_bc = p.x + bc.x + bc.width;
+                if (ch.width < end_of_bc) {
+                    pitem.addClass('truncate');
+                } else {
+                    pitem.removeClass('truncate');
+                }
+            }
+        }
+
+        // Debouncing so breadcrumbs don't flash on and off during resizing
+        let timeout;
+        $(window).on('resize', (re) => {
+           if (timeout) { clearTimeout(timeout); }
+           timeout = setTimeout(checkBreadcrumbs, 250);
+        });
+    };
 
     /*
        const MainMenuUpdates = () => {
