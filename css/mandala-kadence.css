@@ -316,4 +316,8 @@ div.mandala-message h5 {
   font-size: 1.4rem;
 }
 
+#wpPageSearch select#at-select {
+  min-width: 145px;
+}
+
 /*# sourceMappingURL=mandala-kadence.css.map */
