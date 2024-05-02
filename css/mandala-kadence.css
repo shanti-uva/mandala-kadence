@@ -312,4 +312,8 @@ div.mandala-message h5 {
   display: inline-block;
 }
 
+.mandala .c-content__main__kmaps label {
+  font-size: 1.4rem;
+}
+
 /*# sourceMappingURL=mandala-kadence.css.map */
