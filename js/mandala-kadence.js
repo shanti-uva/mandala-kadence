@@ -91,16 +91,18 @@
     const ResizeListener = () => {
         const checkBreadcrumbs = () => {
             const bcitem = $('.breadcrumb-item.self');
-            const bc = bcitem[0].getBoundingClientRect();
-            const pitem = bcitem.parent();
-            const p = pitem.get(0).getBoundingClientRect();
-            const ch = $('#c-content__header__main')[0].getBoundingClientRect();
-            if (bc && ch) {
-                const end_of_bc = p.x + bc.x + bc.width;
-                if (ch.width < end_of_bc) {
-                    pitem.addClass('truncate');
-                } else {
-                    pitem.removeClass('truncate');
+            if (bcitem instanceof Array && bcitem.length > 0) {
+                const bc = bcitem[0].getBoundingClientRect();
+                const pitem = bcitem.parent();
+                const p = pitem.get(0).getBoundingClientRect();
+                const ch = $('#c-content__header__main')[0].getBoundingClientRect();
+                if (bc && ch) {
+                    const end_of_bc = p.x + bc.x + bc.width;
+                    if (ch.width < end_of_bc) {
+                        pitem.addClass('truncate');
+                    } else {
+                        pitem.removeClass('truncate');
+                    }
                 }
             }
         }
