@@ -278,7 +278,7 @@ function tibcal_shortcode() {
                             <p>
                                 For more in-depth information about the Tibetan calendar, see
                                 <a target="_blank" href="https://nitartha.org/about-the-tibetan-calendar/">
-                                    http://www.nitartha.org/calendar_overview.html</a>.
+                                    https://nitartha.org/about-the-tibetan-calendar/</a>.
                             </p>
                         </div>
                     </div>
