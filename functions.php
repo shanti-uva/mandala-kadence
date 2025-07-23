@@ -29,3 +29,5 @@ function add_search_button_portal($sidebar) {
     $output = str_replace('class="menu-main-menu-container">', 'class="menu-main-menu-container"><div id="search-box-btns"></div>', $output);
     return $output . '<!-- End of Sidebar -->';
 }*/
+
+require_once 'tibcal/index.php';
