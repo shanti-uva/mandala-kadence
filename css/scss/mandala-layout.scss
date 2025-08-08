@@ -66,6 +66,9 @@ body.loading {
       margin: 0 0;
       padding: 0 0;
       min-width: unset;
+      min-height: 100vh;
+      z-index: 1000;
+      background-color: #f7f7f7;
 
       .sidebar-inner-wrap {
         display: flex;
