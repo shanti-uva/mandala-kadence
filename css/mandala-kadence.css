@@ -67,7 +67,6 @@
   aside#secondary:not(.open) {
     display: none;
   }
-
   .logged-in #mobile-sidebar-buttons {
     top: 100px;
   }
@@ -136,6 +135,9 @@ body.loading footer#colophon {
   margin: 0 0;
   padding: 0 0;
   min-width: unset;
+  min-height: 100vh;
+  z-index: 1000;
+  background-color: #f7f7f7;
   /* For Main menu in sidebar widget */
 }
 #primary .content-container #secondary .sidebar-inner-wrap {
@@ -285,8 +287,7 @@ div#basicAndBrowse #browseSearchPortal main-search-tree-toggle svg {
 div.mandala-message {
   width: 100%;
   /* Colors taken from BS: https://getbootstrap.com/docs/4.5/utilities/colors/ */
-  background-color: #17a2b8;
-  /* Info color */
+  background-color: #17a2b8; /* Info color */
 }
 div.mandala-message.success {
   background-color: #28a745 !important;
