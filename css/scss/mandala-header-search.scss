@@ -4,10 +4,18 @@
   height: 60px;
   width: 100%;
 
-  #mobile-header #basicSearchPortal {
-    margin-left: 100px;
+  /* Mobile header */
+  #mobile-header {
+    #basicSearchPortal {
+      margin-left: 100px;
+    }
+    .mobile-site-branding {
+      padding: 0;
+      .site-title-wrap {
+        display: none;
+      }
+    }
   }
-
 }  /** End of #masthead */
 
 div#basicAndBrowse {
@@ -50,6 +58,12 @@ div#basicAndBrowse {
           margin-top: -4px;
         }
       }
+
+      label.sitemap.active {
+        svg {
+          fill: #000;
+        }
+      }
     }
 
     #advanced-search-tree-toggle .icon {
@@ -88,6 +102,23 @@ div#basicAndBrowse {
   .search-column-search-form , .search-column-reset-filters {
     padding-left: 1rem;
     border: thin solid green;
+  }
+}
+
+/* Sitemap */
+#sitemap-list {
+  li {
+    margin-top: 0!important;
+    line-height: 1.5!important;
+    a {
+      display: inline-block;
+      color: var(--global-palette-highlight);
+    }
+
+    ul li {
+      margin-left: 3rem;
+      text-indent: -1.75rem;
+    }
   }
 }
 

@@ -190,9 +190,16 @@ body.loading footer#colophon {
   position: fixed;
   height: 60px;
   width: 100%;
+  /* Mobile header */
 }
 #masthead #mobile-header #basicSearchPortal {
   margin-left: 100px;
+}
+#masthead #mobile-header .mobile-site-branding {
+  padding: 0;
+}
+#masthead #mobile-header .mobile-site-branding .site-title-wrap {
+  display: none;
 }
 
 /** End of #masthead */
@@ -235,6 +242,9 @@ div#basicAndBrowse #browseSearchPortal .c-MainSearchToggle--group #advanced-site
 div#basicAndBrowse #browseSearchPortal .c-MainSearchToggle--group #advanced-site-settings svg {
   margin-top: -4px;
 }
+div#basicAndBrowse #browseSearchPortal .c-MainSearchToggle--group label.sitemap.active svg {
+  fill: #000;
+}
 div#basicAndBrowse #browseSearchPortal #advanced-search-tree-toggle .icon {
   top: 0.1rem;
 }
@@ -263,6 +273,20 @@ div#basicAndBrowse #browseSearchPortal main-search-tree-toggle svg {
 #l-column__search .search-column-header-filters .search-column-search-form, #l-column__search .search-column-header-filters .search-column-reset-filters {
   padding-left: 1rem;
   border: thin solid green;
+}
+
+/* Sitemap */
+#sitemap-list li {
+  margin-top: 0 !important;
+  line-height: 1.5 !important;
+}
+#sitemap-list li a {
+  display: inline-block;
+  color: var(--global-palette-highlight);
+}
+#sitemap-list li ul li {
+  margin-left: 3rem;
+  text-indent: -1.75rem;
 }
 
 /** Hide primary menu when subsite menu is shown **/
