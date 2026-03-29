@@ -6,6 +6,9 @@ require_once 'class-mandala-admin.php';
 /* Class to extend kadence to allow for subsite banners, menus, etc. */
 require_once 'class-mandala-kadence.php';
 
+/* Create ACF Fields for posts with default template */
+require_once get_stylesheet_directory() . '/inc/acf-fields.php';
+
 add_filter('upload_mimes', 'add_custom_upload_mimes');
 function add_custom_upload_mimes($existing_mimes) {
     $existing_mimes['otf'] = 'application/x-font-otf';

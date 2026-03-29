@@ -110,12 +110,8 @@ class MandalaKadence {
 	}
 
 	function init() {
-		// Reigster styles and scripts for Mandala Kadence theme
-		wp_enqueue_style( 'mandala-kadence-styles', get_stylesheet_directory_uri() . '/css/mandala-kadence.css',
-		 	false,'1.0','all');
-		wp_enqueue_script( 'mandala-kadence-scripts', get_stylesheet_directory_uri() . '/js/mandala-kadence.js',
-			array ( 'jquery' ), 1.0, true);
 
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_mandala_scripts'));
 		// Add custom styles from /css/custom folder (just files ending in *.css)
 		$custom_folder = get_stylesheet_directory() . '/css/custom';
 		$files = array_diff(scandir($custom_folder), array('.', '..'));
@@ -129,6 +125,14 @@ class MandalaKadence {
 				false,'1.0','all');
 		}
 	}
+
+    public function enqueue_mandala_scripts() {
+        // Reigster styles and scripts for Mandala Kadence theme
+        wp_enqueue_style( 'mandala-kadence-styles', get_stylesheet_directory_uri() . '/css/mandala-kadence.css',
+            false,'1.0','all');
+        wp_enqueue_script( 'mandala-kadence-scripts', get_stylesheet_directory_uri() . '/js/mandala-kadence.js',
+            array ( 'jquery' ), 1.0, true);
+    }
 
 	/**
 	 * This function adds custom data as a JSON object to the DOM to be used by an embedded React standalone
